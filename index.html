@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Template Comparison</title>
+  <style>
+  .draggable { width: 80%; position: absolute; }
+  #containment-wrapper { width: 100%; height: 70vh; border-top:2px solid #ccc; border-bottom:2px solid #ccc; position: relative;}
+  h3 { clear: left; }
+  img { width: 50%; float: left; }
+  body { padding: 0; margin: 0;}
+  .vline{
+      position:absolute;
+      top:0;
+      left:50%;
+      bottom:0; margin:0;
+      border:none;
+      border-right:solid 1px red;
+      z-index:10;
+  }
+  </style>
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script>
+
+  var mmToPxRatio;
+  var imageSizeRatio;
+  
+  function updateImageUtil(n, bsl, recul, ratio) {
+
+    // Update bsl
+    $( "#monimage"+(2*n) ).position({
+      my: "left top",
+      at: "right-"+(27+(370-bsl))*ratio+" top",
+      of: "#monimage"+(2*n-1)
+    });
+
+    // Update recul
+    $( "#draggable"+n ).position({
+      my: "center center",
+      at: "center+"+(14+(370-bsl)/2-recul)*ratio+" center",
+      of: "#containment-wrapper"
+    });
+  }
+
+  function updateImage() {
+    updateImageUtil(1, $("#bsl1").val(), $("#recul1").val(), mmToPxRatio*imageSizeRatio);
+    updateImageUtil(2, $("#bsl2").val(), $("#recul2").val(), mmToPxRatio*imageSizeRatio);
+  }
+
+  function updateSize() {
+    imageSize = window.innerWidth*0.4;
+
+    $('#monimage1').width(imageSize);
+    $('#monimage2').width(imageSize);
+    $('#monimage3').width(imageSize);
+    $('#monimage4').width(imageSize);
+    $('#draggable1').width(2*imageSize);
+    $('#draggable2').width(2*imageSize);
+
+    mmToPxRatio = 841.89/297; // 1mm = 841.89/297 px (quand image à 100% !)
+    imageSizeRatio = imageSize/841.89; // ex: si l'image fait 500px à la place des 841.89 originaux, ratio < 1
+  }
+
+  function updatewindow() {
+    updateSize();
+    updateImage();
+  }
+
+  $( function() {
+    updateSize();
+    $(window).on('resize', updatewindow);
+
+    
+    $( "#bsl1").val(370);
+    $( "#bsl2").val(370);
+    $( "#recul1").val(0);
+    $( "#recul2").val(0);
+    updateImage();
+
+    $( "#draggable1" ).draggable({ 
+      containment: "#containment-wrapper", 
+      scroll: false, 
+      axis: "x",
+      stop: function(event,ui) {
+        var wrapper = $("#containment-wrapper").offset();
+        var wrapperWidth = $("#containment-wrapper").width();
+        var wrapperCenter = wrapper.left+wrapperWidth/2
+        var myCenter = $("#monimage2").offset().left+(13+(370-$("#bsl1").val())/2)*mmToPxRatio*imageSizeRatio
+        $("#recul1").val((wrapperCenter-myCenter)/2);
+      }
+    });
+
+    $( "#draggable2" ).draggable({ 
+      containment: "#containment-wrapper", 
+      scroll: false, 
+      axis: "x",
+      stop: function(event,ui) {
+        var wrapper = $("#containment-wrapper").offset();
+        var wrapperWidth = $("#containment-wrapper").width();
+        var wrapperCenter = wrapper.left+wrapperWidth/2
+        var myCenter = $("#monimage4").offset().left+(13+(370-$("#bsl2").val())/2)*mmToPxRatio*imageSizeRatio
+        $("#recul2").val((wrapperCenter-myCenter)/2);
+      }
+    });
+
+    $( "#bsl1").change(function() {
+      updateImage()
+    });
+
+    $( "#bsl2").change(function() {
+      updateImage()
+    });
+
+    $( "#recul1").change(function() {
+      updateImage()
+    });
+
+    $( "#recul2").change(function() {
+      updateImage()
+    });
+
+    $('#select1').on('change', function(){
+        $('#monimage1').attr('src', 'templates/butee/' + $(this).val() + '.svg');
+        $('#monimage2').attr('src', 'templates/talon/' + $(this).val() + '.svg');
+    });
+
+    $('#select2').on('change', function(){
+        $('#monimage3').attr('src', 'templates/butee/' + $(this).val() + '.svg');
+        $('#monimage4').attr('src', 'templates/talon/' + $(this).val() + '.svg');
+    });
+
+  });
+  </script>
+</head>
+<body>
+ 
+<h3 style="text-align: center">Template Comparison :</h3>
+<div id="containment-wrapper">
+  <div id="draggable1" class="draggable ui-widget-content">
+    <img src="templates/butee/atk12.svg" id="monimage1">
+    <img src="templates/talon/atk12.svg" id="monimage2">
+  </div>
+  <div id="draggable2" class="draggable ui-widget-content">
+    <img src="templates/butee/atk12.svg" id="monimage3">
+    <img src="templates/talon/atk12.svg" id="monimage4">
+  </div>
+  <hr class="vline" />
+</div>
+
+<p>
+  BSL fix 1 : <input type="number" id="bsl1" min="240" max="370"><br />
+  Avancement fix 1 : <input type="number" id="recul1"> mm<br />
+  Fixation 1 : 
+  <select id="select1">
+    <option value="atk12">Atk Raider 12 2.0</option>
+    <option value="atk14">Atk FreeRaider 14 2.0</option>
+    <option value="axial1">Rossignol Axial 1 / Look pivot avant 2005</option>
+    <option value="axial2">Rossignol Axial 2 / Look PX et SPX</option>
+    <option value="fks">Rossignol FKS / Look Pivot</option>
+    <option value="ion">G3 Ion</option>
+    <option value="kingpin">Marker Kingpin</option>
+    <option value="marker-m">Marker Free Ten / M-Series</option>
+    <option value="marker-royal">Marker Royal Family</option>
+    <option value="pxracing">Rossignol Axial Racing / Look PX Racing</option>
+    <option value="salomon">Salomon / Atomic / Scott toute fixation alpine jusque 2013</option>
+    <option value="shift">Salomon / Atomic Shift MNC</option>
+    <option value="sth2">Salomon / Atomic STH2 WTR</option>
+    <option value="tyrolia">Tyrolia / Head : Peak / Mojo / Freeflex / Attack / Attack2 / Attack Demo / LD</option>
+    <option value="vipec">Diamir Vipec / Tecton</option>
+    <option value="vist">Vist V614</option>
+    <option value="control">control (shift)</option>
+  </select>
+</p>
+
+<p>
+  BSL fix 2 : <input type="number" id="bsl2" min="240" max="370"><br />
+  Avancement fix 2 : <input type="number" id="recul2"> mm<br />
+  Fixation 2 :
+  <select id="select2">
+    <option value="atk12">Atk Raider 12 2.0</option>
+    <option value="atk14">Atk FreeRaider 14 2.0</option>
+    <option value="axial1">Rossignol Axial 1 / Look pivot avant 2005</option>
+    <option value="axial2">Rossignol Axial 2 / Look PX et SPX</option>
+    <option value="fks">Rossignol FKS / Look Pivot</option>
+    <option value="ion">G3 Ion</option>
+    <option value="kingpin">Marker Kingpin</option>
+    <option value="marker-m">Marker Free Ten / M-Series</option>
+    <option value="marker-royal">Marker Royal Family</option>
+    <option value="pxracing">Rossignol Axial Racing / Look PX Racing</option>
+    <option value="salomon">Salomon / Atomic / Scott toute fixation alpine jusque 2013</option>
+    <option value="shift">Salomon / Atomic Shift MNC</option>
+    <option value="sth2">Salomon / Atomic STH2 WTR</option>
+    <option value="tyrolia">Tyrolia / Head : Peak / Mojo / Freeflex / Attack / Attack2 / Attack Demo / LD</option>
+    <option value="vipec">Diamir Vipec / Tecton</option>
+    <option value="vist">Vist V614</option>
+    <option value="control">control (shift)</option>
+  </select>
+</p>
+ 
+</body>
+</html>
